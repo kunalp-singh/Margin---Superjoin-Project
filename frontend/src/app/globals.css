@@ -1,0 +1,53 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: #F6F7F4;
+  --surface: #FFFFFF;
+  --ink: #202A2E;
+  --slate: #687277;
+  --border: #DDE2E0;
+  --accent: #287C78;
+  --accent-light: #E2F0EE;
+  --accent-dark: #1E625F;
+  --font-inter: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-source-serif: 'Source Serif 4', Georgia, Cambria, "Times New Roman", Times, serif;
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-inter);
+  -webkit-font-smoothing: antialiased;
+  margin: 0;
+  padding: 0;
+}
+
+/* Custom Paper Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--slate);
+}
+
+/* Highlighted match annotation style (teal paper marker) */
+.evidence-highlight {
+  background-color: #E2F0EE;
+  border-bottom: 2px solid #287C78;
+  color: #1E625F;
+  padding: 0 3px;
+  border-radius: 2px;
+  font-weight: 500;
+}
