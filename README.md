@@ -2,7 +2,7 @@
 
 Margin is a small web application that reads PDFs, extracts facts with source evidence, and compares facts across documents. Each result is either corroborated, contradicted, reconciled by context, or marked uncertain.
 
-[![Watch the demo](https://img.youtube.com/vi/ZeUgABiiM1I/0.jpg)](https://youtu.be/ZeUgABiiM1I)
+<p align="center"> <a href="https://youtu.be/ZeUgABiiM1I"> <img src="https://img.youtube.com/vi/ZeUgABiiM1I/maxresdefault.jpg" alt="Watch the demo" width="640"> </a> <br> <a href="https://youtu.be/ZeUgABiiM1I">▶ Watch the 3-minute demo on YouTube</a> </p>
 
 ## 1. Setup and Run Instructions
 
