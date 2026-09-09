@@ -196,7 +196,7 @@ If all relevant dimensions agree and values agree, the result is corroborated. I
 - Candidate threshold and top-k retrieval settings are not tuned against a large document collection.
 - The local fallback embedding can miss some paraphrases.
 - There is no full automated regression suite for every extraction and classification edge case.
-- Starter PDFs, screenshots, and the final demo video are not included in the repository.
+- Starter PDFs and screenshots are not included in the repository; the demo video is linked below.
 
 ### What is already supported
 
@@ -211,11 +211,7 @@ If all relevant dimensions agree and values agree, the result is corroborated. I
 - Benchmark retrieval and processing time on large PDFs and many-document corpora.
 - Add stronger duplicate detection and relationship pagination for larger knowledge layers.
 - Add a small demo-data workflow if the source PDFs can legally be redistributed.
-- Add the final four-case video URL here before submission:
-
-```text
-VIDEO_LINK: <add the final demonstration URL>
-```
+- Demo video showing PDF processing and the four required cases: [Watch the demo on YouTube](https://youtu.be/ZeUgABiiM1I).
 
 ## 5. Additional Notes
 
