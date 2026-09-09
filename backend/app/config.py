@@ -16,7 +16,15 @@ DATA_DIR.mkdir(exist_ok=True)
 
 load_dotenv(BASE_DIR / ".env")
 
-DATABASE_URL = os.getenv("DATABASE_URL", f"sqlite:///{DATA_DIR}/margin.db")
+configured_database_url = os.getenv("DATABASE_URL")
+if RUNNING_ON_VERCEL and (
+    not configured_database_url or configured_database_url.startswith("sqlite")
+):
+    # SQLite cannot persist on Vercel, but a temporary database keeps health
+    # checks and short-lived demo requests from failing on a read-only path.
+    DATABASE_URL = f"sqlite:///{DATA_DIR}/margin.db"
+else:
+    DATABASE_URL = configured_database_url or f"sqlite:///{DATA_DIR}/margin.db"
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
 DISABLE_GEMINI = os.getenv("DISABLE_GEMINI", "0").lower() in {"1", "true", "yes"}
 EMBEDDING_MODEL_NAME = "all-MiniLM-L6-v2"
