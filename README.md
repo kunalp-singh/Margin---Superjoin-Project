@@ -2,6 +2,8 @@
 
 Margin is a small web application that reads PDFs, extracts facts with source evidence, and compares facts across documents. Each result is either corroborated, contradicted, reconciled by context, or marked uncertain.
 
+[![Watch the demo](https://img.youtube.com/vi/ZeUgABiiM1I/0.jpg)](https://youtu.be/ZeUgABiiM1I)
+
 ## 1. Setup and Run Instructions
 
 ### Requirements
@@ -53,6 +55,12 @@ curl -F "file=@/path/to/document.pdf" http://localhost:8000/api/documents
 ```
 
 The repository intentionally does not include API keys, uploaded PDFs, or the local database. A fresh clone starts empty; upload the PDFs you want to compare.
+
+## 2. Video Demo
+
+[Watch the demo on YouTube](https://youtu.be/ZeUgABiiM1I) (≤3 minutes)
+
+The video shows a PDF being uploaded and processed, followed by one example each of the four required cases: a fact corroborated across documents, a genuine contradiction, an apparent contradiction reconciled by context, and an extraction/reasoning failure with how the system handled it.
 
 ## 3. Approach
 
@@ -161,7 +169,7 @@ One comparison between two facts:
 
 #### `pipeline_runs` and `pipeline_stages`
 
-These tables make processing visible and recoverable. Each run records its version and outcome. Each stage records attempts, timestamps, errors, and details for parsing, extraction, verification, persistence, matching, and completion. Reprocessing removes a document’s derived facts and relationships, then rebuilds them with the current pipeline version.
+These tables make processing visible and recoverable. Each run records its version and outcome. Each stage records attempts, timestamps, errors, and details for parsing, extraction, verification, persistence, matching, and completion. Reprocessing removes a document's derived facts and relationships, then rebuilds them with the current pipeline version.
 
 ### Relationship logic
 
@@ -196,7 +204,7 @@ If all relevant dimensions agree and values agree, the result is corroborated. I
 - Candidate threshold and top-k retrieval settings are not tuned against a large document collection.
 - The local fallback embedding can miss some paraphrases.
 - There is no full automated regression suite for every extraction and classification edge case.
-- Starter PDFs and screenshots are not included in the repository; the demo video is linked below.
+- Starter PDFs and screenshots are not included in the repository; see the demo video linked above.
 
 ### What is already supported
 
@@ -211,7 +219,6 @@ If all relevant dimensions agree and values agree, the result is corroborated. I
 - Benchmark retrieval and processing time on large PDFs and many-document corpora.
 - Add stronger duplicate detection and relationship pagination for larger knowledge layers.
 - Add a small demo-data workflow if the source PDFs can legally be redistributed.
-- Demo video showing PDF processing and the four required cases: [Watch the demo on YouTube](https://youtu.be/ZeUgABiiM1I).
 
 ## 5. Additional Notes
 
