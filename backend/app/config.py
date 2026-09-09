@@ -7,7 +7,11 @@ load_dotenv()
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 # Vercel's deployed filesystem is read-only apart from /tmp. Persistent
 # deployments should provide an external DATABASE_URL and object storage.
-DATA_DIR = Path("/tmp/margin-data") if os.getenv("VERCEL") else BASE_DIR / "data"
+RUNNING_ON_VERCEL = any(
+    os.getenv(name)
+    for name in ("VERCEL", "VERCEL_ENV", "VERCEL_URL")
+)
+DATA_DIR = Path("/tmp/margin-data") if RUNNING_ON_VERCEL else BASE_DIR / "data"
 DATA_DIR.mkdir(exist_ok=True)
 
 load_dotenv(BASE_DIR / ".env")
