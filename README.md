@@ -8,7 +8,7 @@ Margin is a small web application that reads PDFs, extracts facts with source ev
 
 - Python 3.11+
 - Node.js 18+ and npm
-- Gemini API key from [Google AI Studio](https://ai.google.dev/) (optional)
+- Gemini API key from [Google AI Studio](https://ai.google.dev/) 
 
 ### Install
 
