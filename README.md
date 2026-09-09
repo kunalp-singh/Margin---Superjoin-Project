@@ -222,3 +222,21 @@ VIDEO_LINK: <add the final demonstration URL>
 No API keys are committed. Copy `.env.example` to `.env`; local secrets, databases, uploads, virtual environments, and build artifacts are ignored by Git.
 
 The UI supports the required review cases: corroboration, contradiction, contextual reconciliation, and uncertainty. The reviewer must upload suitable PDFs to reproduce populated examples.
+
+### Vercel deployment
+
+The root `vercel.json` defines two services:
+
+- `api/index.py` exposes the FastAPI app through `@vercel/python`.
+- `frontend/package.json` builds the Next.js app through `@vercel/next`.
+
+Deploy from the repository root with the Vercel CLI:
+
+```bash
+npm install --global vercel
+vercel
+```
+
+Add `GEMINI_API_KEY` and any database settings in the Vercel project environment variables. The frontend uses same-origin `/api` routes in production and uses `http://localhost:8000/api` during local development.
+
+Vercel functions have ephemeral local storage and bounded execution time. For persistent production uploads and SQLite data, use a durable database/object store or deploy the backend separately; the Vercel configuration is intended for a deployable demo/prototype.

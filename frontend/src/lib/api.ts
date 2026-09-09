@@ -1,6 +1,7 @@
 import { DocumentItem, FactItem, RelationshipItem, ReviewCasesResponse, PipelineStatus } from './types';
 
-const API_BASE = 'http://localhost:8000/api';
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE
+  || (process.env.NODE_ENV === 'development' ? 'http://localhost:8000/api' : '/api');
 
 async function handleResponse<T>(res: Response): Promise<T> {
   const text = await res.text();
