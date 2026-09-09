@@ -1,116 +1,115 @@
 # Margin — A Fact Knowledge Layer
 
-Margin is a web application that ingests PDF documents, extracts verifiable facts, grounds every fact in verbatim source text and page numbers, and determines whether facts across documents **corroborate**, **contradict**, or are **contextually reconciled** (different time periods, units, or scope). Facts that cannot be confidently classified are marked **uncertain** rather than forced into a bucket.
+Margin ingests PDF documents, extracts grounded facts, and explains how claims across documents corroborate, contradict, reconcile, or remain uncertain.
 
-Built for the **Superjoin VIT 2026 Engineering Intern Assignment**.
-
----
-
-## 1. Quick Start Instructions
+## 1. Setup and Run Instructions
 
 ### Prerequisites
-- Python 3.11+
-- Node.js 18+ and npm
-- (Optional) `GEMINI_API_KEY` from Google AI Studio. *Note: If no API key is provided, Margin runs on a deterministic rule-based evaluator out of the box.*
 
-### Step 1: Clone & Setup Backend
+- Python 3.11 or newer
+- Node.js 18 or newer and npm
+- A Gemini API key from [Google AI Studio](https://ai.google.dev/) (optional; the local rule-based path works without one)
+
+### Backend setup
+
+From the repository root:
+
 ```bash
-# Clone the repository
-git clone https://github.com/your-username/Margin-Superjoin.git
-cd Margin-Superjoin
-
-# Create Python Virtual Environment & Install Dependencies
 python3 -m venv venv
 source venv/bin/activate
 pip install -r backend/requirements.txt
-
-# (Optional) Copy environment template and add your Gemini API key
 cp .env.example .env
 ```
 
-### Step 2: Setup Frontend
+Set `GEMINI_API_KEY` in `.env` if Gemini verification and reasoning are desired. The other supported variables are `DATABASE_URL`, `DISABLE_GEMINI`, `GEMINI_MODEL_NAME`, `PIPELINE_VERSION`, `GEMINI_TIMEOUT_SECONDS`, `GEMINI_MAX_RETRIES`, `CANDIDATE_SIMILARITY_THRESHOLD`, and `TOP_K_CANDIDATES`. The default database is SQLite at `data/margin.db`; tables and additive migrations are created automatically when the API starts.
+
+Start the backend from the repository root:
+
+```bash
+source venv/bin/activate
+uvicorn backend.app.main:app --host 0.0.0.0 --port 8000 --reload
+```
+
+The API is available at `http://localhost:8000` and its OpenAPI documentation is at `http://localhost:8000/docs`.
+
+### Frontend setup
+
+In a second terminal:
+
 ```bash
 cd frontend
 npm install
-cd ..
-```
-
-### Step 3: Run the Application
-In terminal window 1 (Backend):
-```bash
-source venv/bin/activate
-uvicorn backend.app.main:app --port 8000 --reload
-```
-
-In terminal window 2 (Frontend):
-```bash
-cd frontend
 npm run dev
 ```
 
-Open your browser at **`http://localhost:3000`**.
+Open `http://localhost:3000`, then use the upload action to add one or more PDFs. The API alternative is:
 
----
-
-## 2. Seed Demo Data & 4 Evidence Cases
-
-Upload multiple source PDFs from the same reporting set to demonstrate the four relationship cases:
-
-1. **Corroboration Across Phrasings**: equivalent values with different wording or units.
-2. **Genuine Contradiction**: conflicting values for the same entity, metric, period, and scope.
-3. **Contextual Reconciliation**: differing values explained by time period, unit, or scope.
-4. **Extraction/Reasoning Ambiguity**: a claim with missing metric, entity, period, or other referent is marked **uncertain**.
-
-Click the **"Review 4 Cases"** button in the header for 1-click navigation to inspect any case.
-
----
-
-## 3. Technical Approach & Architecture
-
-```
-PDF Upload ──► PyMuPDF Parsing ──► Sentence Segmentation ──► Gemini Fact Extraction
-                                                                      │
-SQLite Storage ◄── Gemini Relationship ◄── Candidate Retrieval ◄──────┘
-(Incremental)     Reasoning Trace       (sentence-transformers)
+```bash
+curl -F "file=@/path/to/document.pdf" http://localhost:8000/api/documents
 ```
 
-- **Flexible JSON Attribute Schema**: Facts use a JSON column for `attributes` (`{entity, metric, value, unit, period, scope, qualifier}`) allowing new attribute types to appear dynamically without database migrations.
-- **Local Candidate Search**: Uses `sentence-transformers` (`all-MiniLM-L6-v2`) and cosine similarity to retrieve top-$k$ candidate pairs prior to LLM evaluation, avoiding $O(n^2)$ API calls.
-- **Structured Reasoning Traces**: Every relationship edge records an explicit step-by-step logic trace (`same_entity`, `same_metric`, `same_period`, `same_unit`, `reconciliation_dimension`) powering the **"Why?"** UI panel.
-- **Incremental Ingestion**: Adding new PDFs appends facts and relationship edges into SQLite without wiping existing documents. An additive SQLite migration records a pipeline version and durable parse/extract/verify/persist/match timeline for every attempt; failed documents can be reprocessed from the API.
-- **Layout-aware grounding**: PyMuPDF blocks, bounding boxes, table regions, and validated character offsets are retained. Atomic clauses and malformed-table uncertainty prevent a page artifact from becoming a fact.
-- **Compatibility matching**: Candidate retrieval blocks incomparable entities/metrics before semantic scoring. Relationship reasoning exposes a six-dimension evidence checklist and derives confidence from those checks.
+This repository does not commit PDFs or populated database data. A fresh clone therefore starts empty; upload the assignment PDFs through the UI or API to populate it.
 
-### AI Tools Used
-- **Gemini 2.0 Flash (`google-genai` SDK)**: Used for structured JSON fact extraction, grounding verification, and multi-factor relationship reasoning.
-- **Antigravity (Google DeepMind Agentic Coding Assistant)**: Used for architecture design, backend pipeline implementation, custom Tailwind design system creation, and test verification.
+## 3. Approach
 
----
+I interpreted a Fact Knowledge Layer as more than a collection of extracted numbers. A useful fact must retain its verbatim source evidence, page number, character span, attributes, and uncertainty state. A useful relationship must explain why two facts are comparable and why the result is corroboration, contradiction, reconciliation, or uncertainty.
 
-## 4. Design System — "Ink + Teal + Paper"
+The current pipeline is:
 
-- **Color Tokens**:
-  - `BACKGROUND`: `#F6F7F4` (soft cool-paper)
-  - `SURFACE`: `#FFFFFF`
-  - `PRIMARY TEXT`: `#202A2E` (deep ink)
-  - `SECONDARY TEXT`: `#687277`
-  - `BORDER`: `#DDE2E0`
-  - `PRIMARY ACCENT`: `#287C78` (sophisticated teal)
-  - `ACCENT LIGHT`: `#E2F0EE`
-  - `ACCENT DARK`: `#1E625F`
+```text
+PDF layout parsing
+  -> structural validation and clause-level segmentation
+  -> local candidate extraction
+  -> optional Gemini verification
+  -> local embedding candidate retrieval and compatibility filtering
+  -> checklist-based relationship classification
+  -> SQLite persistence and API/UI presentation
+```
 
-- **Relationship Palette**:
-  - **Corroborated** (Teal): background `#E2F0EE`, text `#286B67`, icon `#287C78`
-  - **Contradicted** (Terracotta): background `#F4E6E2`, text `#92564E`, icon `#A96359`
-  - **Reconciled** (Amber): background `#F4EDDC`, text `#896D35`, icon `#A88343`
-  - **Uncertain** (Blue-grey): background `#E9EDF0`, text `#65727A`, icon `#71808A`
+The structural validation boundary is intentional. PyMuPDF retains page blocks and bounding boxes, while the parser filters page furniture, validates source spans, keeps value/period/unit tuples together, and separates table-like regions from prose. Only candidates that pass this boundary are sent to Gemini for verification or semantic reasoning. This boundary was added after testing exposed page numbers, dense-table cells, and values from different clauses being incorrectly treated as facts. An LLM should not be the first component deciding whether raw, structurally ambiguous text is a fact.
 
-- **Typography**: **Inter** for UI controls/labels and **Source Serif 4** for verbatim grounded source quotes.
+Facts use a flexible JSON `attributes` field (`entity`, literal `metric`, `value`, `unit`, `period`, `scope`, and optional qualifiers) rather than a fixed set of database columns. This preserves metric definitions that differ across documents and allows new attributes without a schema migration. `normalized_signature` and embeddings are separate retrieval aids; they do not replace the literal metric label used for comparison.
 
----
+Relationship classification evaluates entity, metric definition, period, unit, scope, and qualifier/context before assigning a type. A cheap compatibility filter blocks obviously invalid pairs, such as percentage and count values or distinct revenue definitions, before classification. Confidence is derived from the resolved evidence dimensions rather than being a fixed score per relationship category. Documents, facts, relationships, and pipeline stages carry a version so stale derived data can be reprocessed explicitly.
 
-## 5. Limitations & Future Work
+Key trade-offs:
 
-1. **OCR Support**: Current parser uses PyMuPDF for text-native PDFs. Scanned image-only PDFs can be integrated using Tesseract or Gemini Vision API.
-2. **Hierarchical Document Navigation**: Adding a built-in PDF viewer canvas with bounding box overlays for visual document highlighting.
-3. **Graph Clustering**: Grouping large clusters of related claims into topic sub-graphs for enterprise-scale corpora.
+- SQLite was chosen over a vector database because the assignment-scale corpus needs no separate infrastructure, while SQLite keeps incremental ingestion and local development simple.
+- Deterministic local embeddings retrieve candidate pairs before any LLM call. This reduces cost and latency on Gemini's free tier, at the cost of recall that has not yet been benchmarked on a large corpus.
+- Clause-level and layout-aware preprocessing is more complex than sending page text directly to an LLM, but it prevents period/value misalignment and makes table failures visible as uncertainty instead of silently producing a wrong fact.
+- Gemini is optional. Local extraction and checklist rules keep the application usable without an API key, while Gemini can verify structurally valid facts and handle cases where deterministic normalization is insufficient.
+
+AI tools used:
+
+- Gemini (`google-genai`, configured by `GEMINI_MODEL_NAME`) for verification and relationship reasoning after structural validation.
+- Antigravity, an agentic coding assistant, for implementation, refactoring, UI work, and validation support.
+
+## 4. Limitations and Next Steps
+
+### What does not work well yet
+
+- Table detection depends on PDF layout metadata. Visually drawn or irregular tables can be marked uncertain when row and column associations cannot be proven; coverage of dense financial tables is therefore incomplete.
+- Candidate retrieval uses a fixed similarity threshold and top-k value. Recall and precision have not been evaluated against a large, diverse document corpus.
+- The local fallback embedding is deterministic and lightweight rather than a fully evaluated semantic embedding service. It is suitable for the current scale but may miss paraphrases.
+- There is no comprehensive automated regression suite for extraction, the six-dimension classification checklist, or the four demo cases. Current validation is compile/build, smoke checks, and manual review of reprocessed documents.
+- The repository does not include the starter PDFs, populated database, screenshots, or the assignment video. A reviewer must upload PDFs to reproduce the populated state.
+
+### What would be built next
+
+- Large PDFs: profile parsing and embedding work on representative large files, then add bounded batching and background-worker instrumentation where needed.
+- Many PDFs: add corpus-level indexing and pagination, then benchmark candidate retrieval and relationship deduplication as the number of facts grows.
+- Dynamic schema: retain the JSON attributes model, but add schema validation/versioning for newly observed attribute types and an admin view for migrations.
+- Incremental ingestion is implemented: new documents append facts and cross-document relationships without clearing unrelated documents. The next step is stronger duplicate detection and relationship rebuild controls.
+- Add automated fixtures for page-number rejection, multi-period clauses, malformed tables, metric-definition mismatches, unit incompatibility, and each required relationship category.
+- Add a committed demo-data workflow or documented sample-PDF download step if redistribution rights permit it.
+- Replace the video placeholder below with the final four-case walkthrough before submission:
+
+```text
+VIDEO_LINK: <add the final four-case demonstration URL here>
+```
+
+## 5. Additional Notes
+
+No API keys are committed. Copy `.env.example` to `.env` and provide credentials locally; `.env`, databases, uploads, virtual environments, and build artifacts are ignored by Git.
+
+The four required cases—corroboration, genuine contradiction, contextual reconciliation, and extraction/reasoning uncertainty—are supported by the UI and review-case endpoint, but the final submission video link still needs to be added above.
